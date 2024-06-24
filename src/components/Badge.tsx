@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { extend, useFrame } from '@react-three/fiber';
 import {
   BallCollider,
@@ -38,6 +38,7 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
   const rot = new THREE.Vector3();
   const dir = new THREE.Vector3();
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
+  const [hovered, hover] = useState(false);
 
   // A Catmull-Rom curve
   const [curve] = useState(
@@ -60,6 +61,13 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
     [0, 0, 0],
     [0, 1.45, 0],
   ]);
+
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = dragged ? 'grabbing' : 'grab';
+      return () => void (document.body.style.cursor = 'auto');
+    }
+  }, [hovered, dragged]);
 
   useFrame((state, delta) => {
     if (
@@ -142,6 +150,8 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
         >
           <CuboidCollider args={[0.8, 1.125, 0.01]} />
           <mesh
+            onPointerOver={() => hover(true)}
+            onPointerOut={() => hover(false)}
             onPointerUp={() => drag(false)}
             onPointerDown={(evt) =>
               card.current &&
