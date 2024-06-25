@@ -9,10 +9,16 @@ import {
   useRopeJoint,
   useSphericalJoint,
 } from '@react-three/rapier';
-
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
+import { useGLTF, useTexture } from '@react-three/drei';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
+useGLTF.preload(
+  'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/5huRVDzcoDwnbgrKUo1Lzs/53b6dd7d6b4ffcdbd338fa60265949e1/tag.glb'
+);
+useTexture.preload(
+  'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/SOT1hmCesOHxEYxL7vkoZ/c57b29c85912047c414311723320c16b/band.jpg'
+);
 
 // Make RigidBody physics a bit more realistic
 const segmentProps = {
@@ -39,6 +45,13 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
   const dir = new THREE.Vector3();
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
   const [hovered, hover] = useState(false);
+
+  const { nodes, materials } = useGLTF(
+    'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/5huRVDzcoDwnbgrKUo1Lzs/53b6dd7d6b4ffcdbd338fa60265949e1/tag.glb'
+  );
+  const texture = useTexture(
+    'https://assets.vercel.com/image/upload/contentful/image/e5382hct74si/SOT1hmCesOHxEYxL7vkoZ/c57b29c85912047c414311723320c16b/band.jpg'
+  );
 
   // A Catmull-Rom curve
   const [curve] = useState(
@@ -149,7 +162,9 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
           type={dragged ? 'kinematicPosition' : 'dynamic'}
         >
           <CuboidCollider args={[0.8, 1.125, 0.01]} />
-          <mesh
+          <group
+            scale={2.25}
+            position={[0, -1.2, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
             onPointerUp={() => drag(false)}
@@ -162,14 +177,39 @@ export default function Badge({ maxSpeed = 50, minSpeed = 10 }) {
               )
             }
           >
-            <planeGeometry args={[0.8 * 2, 1.125 * 2]} />
-            <meshBasicMaterial color="white" side={THREE.DoubleSide} />
-          </mesh>
+            {/* @ts-expect-error geometry/map are not declared? */}
+            <mesh geometry={nodes.card.geometry}>
+              <meshPhysicalMaterial
+                // @ts-expect-error geometry/map are not declared?
+                map={materials.base.map}
+                map-anisotropy={16}
+                clearcoat={1}
+                clearcoatRoughness={0.15}
+                roughness={0.3}
+                metalness={0.5}
+              />
+            </mesh>
+            <mesh
+              // @ts-expect-error geometry/map are not declared?
+              geometry={nodes.clip.geometry}
+              material={materials.metal}
+              material-roughness={0.3}
+            />
+            {/* @ts-expect-error geometry/map are not declared? */}
+            <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+          </group>
         </RigidBody>
       </group>
       <mesh ref={band}>
         <meshLineGeometry />
-        <meshLineMaterial color="white" lineWidth={0.2} />
+        <meshLineMaterial
+          color="black"
+          depthTest={false}
+          useMap={0}
+          map={texture}
+          repeat={new THREE.Vector2(2, 1)}
+          lineWidth={0.2}
+        />
       </mesh>
     </>
   );

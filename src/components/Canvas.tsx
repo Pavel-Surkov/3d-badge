@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
 import Badge from './Badge';
-import { Environment } from '@react-three/drei';
+import { Environment, Lightformer } from '@react-three/drei';
 import { useControls } from 'leva';
 
 export default function CanvasComponent() {
@@ -19,8 +19,8 @@ export default function CanvasComponent() {
         <Badge />
       </Physics>
       <Environment background blur={0.75}>
-        <color attach="background" args={['black']} />
-        {/* <Lightformer
+        <color attach="background" args={['gray']} />
+        <Lightformer
           intensity={2}
           color="white"
           position={[0, -1, 5]}
@@ -47,7 +47,7 @@ export default function CanvasComponent() {
           position={[-10, 0, 14]}
           rotation={[0, Math.PI / 2, Math.PI / 3]}
           scale={[100, 10, 1]}
-        /> */}
+        />
       </Environment>
     </Canvas>
   );
